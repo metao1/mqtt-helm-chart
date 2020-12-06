@@ -42,6 +42,16 @@ You can use the external loadbalancer of AWS for connecting to EKS.
 To deploy the AWS load balancer controller to an Amazon EKS cluster follow this link.
 https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html
 
+Uncomment the below if you want to run on each of Cloud Provider:
+
+```
+service:
+  type: LoadBalancer
+  #annotations: 
+  # cloud.google.com/load-balancer-type: "Internal" #GCP
+  # service.beta.kubernetes.io/aws-load-balancer-internal: "true" #AWS
+  # service.beta.kubernetes.io/azure-load-balancer-internal: "true" #Azure
+```
 
 ## Generating certificates
 
