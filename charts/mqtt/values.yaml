@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: mqtt
+  repository: metao/mqtt
   tag: latest
-  pullPolicy: Never
+  pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""
