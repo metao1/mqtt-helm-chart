@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mqtt.fullname" . }}
+  labels:
+{{ include "mqtt.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "mqtt.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "mqtt.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.securityContext.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.container.ports.mqtt.name }}
+              containerPort: {{ .Values.container.ports.mqtt.port }}
+              protocol: TCP
+            - name: {{ .Values.container.ports.mqtts.name }}
+              containerPort: {{ .Values.container.ports.mqtts.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.container.ports.mqtt.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.container.ports.mqtt.port }}
+            initialDelaySeconds: 15
+          volumeMounts:
+            - name: mqtt-conf
+              mountPath: /mqtt/config/mqtt.conf
+              subPath: mqtt.conf
+              readOnly: true
+            - name: mqtt-ca-cert
+              mountPath: /mqtt/config/certs/ca.crt
+              subPath: ca.crt
+              readOnly: true
+            - name: mqtt-server-cert
+              mountPath: /mqtt/config/certs/server.crt
+              subPath: server.crt
+              readOnly: true
+            - name: mqtt-server-key
+              mountPath: /mqtt/config/certs/server.key
+              subPath: server.key
+              readOnly: true
+            - name: mqtt-data
+              mountPath: /mqtt/data
+              subPath: mqtt/data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{ range $key, $value:= .Values.configmap }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+      volumes:
+      - name: mqtt-conf
+        configMap:
+          name: {{ include "mqtt.fullname" . }}-config
+      - name: mqtt-ca-cert
+        configMap:
+          name: {{ include "mqtt.fullname" . }}-certs
+          items:
+            - key: ca.crt
+              path: ca.crt
+      - name: mqtt-server-cert
+        configMap:
+          name: {{ include "mqtt.fullname" . }}-certs
+          items:
+              - key: server.crt
+                path: server.crt
+      - name: mqtt-server-key
+        configMap:
+          name: {{ include "mqtt.fullname" . }}-certs
+          items:
+              - key: server.key
+                path: server.key
+      - name: mqtt-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "mqtt.fullname" . }}-pvc
+      {{- else }}
+        emptyDir: {}
+      {{- end -}}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

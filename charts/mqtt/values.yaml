@@ -1,0 +1,115 @@
+replicaCount: 1
+
+image:
+  repository: mqtt
+  tag: latest
+  pullPolicy: Never
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+container:
+  ports:
+    mqtt:
+      name: mqtt
+      port: 1883
+    mqtts:
+      name: mqtts
+      port: 1884
+
+service:
+  type: ClusterIP
+  ports:
+    mqtt:
+      name: mqtt
+      port: 1883
+    mqtts:
+      name: mqtts
+      port: 1884
+
+namespace:
+  name: mqtt
+
+ingress:
+  enabled: true
+  annotations: {}
+  path: "/"
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+config: |-
+  persistence true
+  persistence_location /mqtt/data/
+  log_dest stdout
+  listener 1884
+  listener 1883
+  protocol mqtt
+  cafile /mqtt/config/certs/ca.crt
+  certfile /mqtt/config/certs/server.crt
+  keyfile /mqtt/config/certs/server.key
+  require_certificate true
+  use_subject_as_username true
+
+configmap:
+  SPRING_DATA_MONGODB_URI: mongodb://mqtt-broker-mongodb/mqtt
+  MQTT_PORT: 1883
+  MQTT_REDIS_HOST: mqtt-broker-redis-master
+  MQTT_REDIS_PORT: 6379
+  MQTT_USERNAME: mehrdad
+  MQTT_PASSWORD: mehrdad
+
+certs:
+  ca:
+    crt: |-
+      -----BEGIN CERTIFICATE-----
+      CA_CERT
+      -----END CERTIFICATE-----
+  server:
+    crt: |-
+      -----BEGIN CERTIFICATE-----
+      SERVER_CERT
+      -----END CERTIFICATE-----
+    key: |-
+      -----BEGIN PRIVATE KEY-----
+      SERVER_KEY
+      -----END PRIVATE KEY-----
+
+
+## Persist data to a persistent volume
+persistence:
+  enabled: true
+  ## database data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  annotations: {}
+  storageClass: standard
+
+## Security context
+securityContext:
+  enabled: false
+  runAsUser: 999
+  fsGroup: 999

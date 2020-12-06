@@ -1,0 +1,17 @@
+apiVersion: v2
+appVersion: "1.0"
+name: "mqtt-broker"
+description: "Mqtt broker with its dependencies"
+version: 1.0.0
+
+dependencies:
+  - name: redis
+    version: 1.0.0
+    repository: file://charts/redis
+  - name: mongodb
+    version: 9.2.5
+    repository: file://charts/mongodb
+  - name: mqtt
+    version: 1.0.0
+    repository: file://charts/mqtt
+  
