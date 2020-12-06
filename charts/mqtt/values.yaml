@@ -19,7 +19,7 @@ container:
       port: 1884
 
 service:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     mqtt:
       name: mqtt
