@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "mqtt.fullname" . }}
   labels:
 {{ include "mqtt.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  serviceName: mqtt
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "mqtt.name" . }}

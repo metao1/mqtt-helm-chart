@@ -74,7 +74,7 @@ config: |-
 configmap:
   SPRING_DATA_MONGODB_URI: mongodb://mqtt-broker-mongodb/mqtt
   MQTT_PORT: 1883
-  MQTT_REDIS_HOST: mqtt-broker-redis-master
+  MQTT_REDIS_HOST: mqtt-broker-redis
   MQTT_REDIS_PORT: 6379
   MQTT_USERNAME: mehrdad
   MQTT_PASSWORD: mehrdad
